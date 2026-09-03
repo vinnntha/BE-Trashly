@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum Role {
+  ADMIN   @map("admin")
+  NASABAH @map("nasabah")
+
+  @@map("role")
+}
+
+enum JenisKategori {
+  PLASTIK @map("plastik")
+  KERTAS  @map("kertas")
+  LOGAM   @map("logam")
+  KACA    @map("kaca")
+
+  @@map("jenis_kategori")
+}
+
+enum StatusSetor {
+  MENUNGGU_KONFIRMASI @map("menunggu_konfirmasi")
+  DIVERIFIKASI        @map("diverifikasi")
+  DITOLAK             @map("ditolak")
+  SELESAI             @map("selesai")
+
+  @@map("status_setor")
+}
+
+enum StatusPenukaran {
+  DIPROSES @map("diproses")
+  SELESAI  @map("selesai")
+
+  @@map("status_penukaran")
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  nasabah   Nasabah?
+  adminBank AdminBank?
+
+  @@map("users")
+}
+
+model Nasabah {
+  id          String   @id @default(uuid())
+  namaNasabah String   @map("nama_nasabah")
+  alamat      String   @db.Text
+  telp        String
+  saldoPoin   Float    @default(0) @map("saldo_poin")
+  foto        String?
+  userId      String   @unique @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  setorSampah   SetorSampah[]
+  penukaranPoin PenukaranPoin[]
+
+  @@map("nasabah")
+}
+
+model AdminBank {
+  id            String   @id @default(uuid())
+  namaUnit      String   @map("nama_unit")
+  namaPengelola String   @map("nama_pengelola")
+  telp          String
+  userId        String   @unique @map("user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  setorSampah SetorSampah[]
+
+  @@map("admin_bank")
+}
+
+model KategoriSampah {
+  id           String        @id @default(uuid())
+  namaKategori String        @map("nama_kategori")
+  hargaPerKg   Float         @map("harga_per_kg")
+  poinPerKg    Float         @map("poin_per_kg")
+  jenis        JenisKategori
+  foto         String?
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  detailSetor DetailSetor[]
+
+  @@index([jenis])
+  @@map("kategori_sampah")
+}
+
+model SetorSampah {
+  id           String      @id @default(uuid())
+  kodeSetor    String      @unique @map("kode_setor")
+  tanggal      DateTime    @default(now())
+  status       StatusSetor @default(MENUNGGU_KONFIRMASI)
+  totalBeratKg Float       @default(0) @map("total_berat_kg")
+  totalPoin    Float       @default(0) @map("total_poin")
+  catatan      String?     @db.Text
+  catatanAdmin String?     @db.Text @map("catatan_admin")
+  nasabahId    String      @map("nasabah_id")
+  adminId      String?     @map("admin_id")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  nasabah     Nasabah       @relation(fields: [nasabahId], references: [id], onDelete: Restrict)
+  admin       AdminBank?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  detailSetor DetailSetor[]
+
+  @@index([status])
+  @@index([tanggal])
+  @@map("setor_sampah")
+}
+
+model DetailSetor {
+  id               String   @id @default(uuid())
+  setorId          String   @map("setor_id")
+  kategoriSampahId String   @map("kategori_sampah_id")
+  beratKg          Float    @map("berat_kg")
+  beratKgReal      Float?   @map("berat_kg_real")
+  subtotalPoin     Float    @map("subtotal_poin")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  setorSampah    SetorSampah    @relation(fields: [setorId], references: [id], onDelete: Cascade)
+  kategoriSampah KategoriSampah @relation(fields: [kategoriSampahId], references: [id], onDelete: Restrict)
+
+  @@map("detail_setor")
+}
+
+model Hadiah {
+  id             String   @id @default(uuid())
+  namaHadiah     String   @map("nama_hadiah")
+  poinDibutuhkan Float    @map("poin_dibutuhkan")
+  stok           Int
+  foto           String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  penukaranPoin PenukaranPoin[]
+
+  @@map("hadiah")
+}
+
+model PenukaranPoin {
+  id            String          @id @default(uuid())
+  kodePenukaran String          @unique @map("kode_penukaran")
+  tanggal       DateTime        @default(now())
+  nasabahId     String          @map("nasabah_id")
+  hadiahId      String          @map("hadiah_id")
+  poinTerpakai  Float           @map("poin_terpakai")
+  status        StatusPenukaran @default(DIPROSES)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  nasabah Nasabah @relation(fields: [nasabahId], references: [id], onDelete: Restrict)
+  hadiah  Hadiah  @relation(fields: [hadiahId], references: [id], onDelete: Restrict)
+
+  @@index([tanggal])
+  @@map("penukaran_poin")
+}
