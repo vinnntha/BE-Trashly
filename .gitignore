@@ -55,11 +55,12 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-prompt.md
-masterprompt.md
-authpromt.md
-
 .agents
 .claude
 .cursor
 .devin
+
+prompt.md
+authpromt.md
+
+
