@@ -59,10 +59,13 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .claude
 .cursor
 .devin
-
+   
 prompt.md
 authpromt.md
+promtadmin.md
 
 
 .env.example
 *postman_collection.json
+
+*tsbuildinfo

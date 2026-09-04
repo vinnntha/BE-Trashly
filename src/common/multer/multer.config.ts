@@ -4,10 +4,10 @@ import { extname } from 'path';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 
-export const nasabahUploadOptions = {
+export const createUploadOptions = (folder: string) => ({
   storage: diskStorage({
     destination: (req, file, callback) => {
-      const uploadPath = './uploads/nasabah';
+      const uploadPath = `./uploads/${folder}`;
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
       }
@@ -32,4 +32,8 @@ export const nasabahUploadOptions = {
     }
     callback(null, true);
   },
-};
+});
+
+export const nasabahUploadOptions = createUploadOptions('nasabah');
+export const kategoriUploadOptions = createUploadOptions('kategori');
+export const hadiahUploadOptions = createUploadOptions('hadiah');
