@@ -12,4 +12,7 @@ export class UpdateAdminProfileDto {
   @IsOptional()
   @IsString({ message: 'Nomor telepon harus berupa string' })
   telp?: string;
+
+  @IsOptional()
+  foto?: any;
 }

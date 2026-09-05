@@ -6,7 +6,11 @@ import { UpdateAdminProfileDto } from './dto/update-admin-profile.dto';
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async updateProfile(userId: string, dto: UpdateAdminProfileDto) {
+  async updateProfile(
+    userId: string,
+    dto: UpdateAdminProfileDto,
+    _file?: Express.Multer.File,
+  ) {
     const adminBank = await this.prisma.adminBank.findUnique({
       where: { userId },
     });
