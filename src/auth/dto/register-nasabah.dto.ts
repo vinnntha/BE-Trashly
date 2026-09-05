@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches, MinLength } from 'class-validator';
 
 export class RegisterNasabahDto {
   @IsString()
@@ -22,4 +22,7 @@ export class RegisterNasabahDto {
     message: 'Nomor telepon hanya boleh berisi angka dan tanda +',
   })
   telp!: string;
+
+  @IsOptional()
+  foto?: any;
 }
