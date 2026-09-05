@@ -33,4 +33,7 @@ export class UpdateKategoriSampahDto {
     message: 'Jenis kategori harus salah satu dari: plastik, kertas, logam, kaca',
   })
   jenis?: JenisKategori;
+
+  @IsOptional()
+  foto?: any;
 }

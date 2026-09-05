@@ -2,6 +2,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
 } from 'class-validator';
@@ -33,4 +34,7 @@ export class CreateKategoriSampahDto {
     message: 'Jenis kategori harus salah satu dari: plastik, kertas, logam, kaca',
   })
   jenis: JenisKategori;
+
+  @IsOptional()
+  foto?: any;
 }
