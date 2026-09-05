@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateNasabahDto {
   @IsNotEmpty({ message: 'Username wajib diisi' })
@@ -20,4 +20,7 @@ export class CreateNasabahDto {
   @IsNotEmpty({ message: 'Nomor telepon wajib diisi' })
   @IsString({ message: 'Nomor telepon harus berupa string' })
   telp: string;
+
+  @IsOptional()
+  foto?: any;
 }

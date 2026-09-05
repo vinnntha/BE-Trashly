@@ -21,5 +21,8 @@ export class UpdateNasabahDto {
   @IsString({ message: 'Alamat harus berupa string' })
   alamat?: string;
 
+  @IsOptional()
+  foto?: any;
+
   // Catatan: saldoPoin sengaja tidak didefinisikan agar tidak dapat diubah dari endpoint ini
 }
