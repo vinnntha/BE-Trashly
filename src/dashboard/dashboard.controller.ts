@@ -3,6 +3,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
@@ -12,16 +13,27 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stats')
+  @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   async getStats() {
     const data = await this.dashboardService.getStats();
     return {
       message: 'Statistik dashboard berhasil diambil.',
+      data,
+    };
+  }
+
+  @Get('summary')
+  @Roles('NASABAH')
+  @HttpCode(HttpStatus.OK)
+  async getSummary(@Req() req: any) {
+    const data = await this.dashboardService.getSummary(req.user.nasabahId);
+    return {
+      message: 'Ringkasan dashboard nasabah berhasil diambil.',
       data,
     };
   }
