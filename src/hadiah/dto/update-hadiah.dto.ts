@@ -24,4 +24,7 @@ export class UpdateHadiahDto {
   @IsInt({ message: 'Stok harus berupa bilangan bulat' })
   @Min(0, { message: 'Stok minimal 0' })
   stok?: number;
+
+  @IsOptional()
+  foto?: any;
 }

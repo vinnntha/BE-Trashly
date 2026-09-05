@@ -2,6 +2,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
   Min,
@@ -24,4 +25,7 @@ export class CreateHadiahDto {
   @IsInt({ message: 'Stok harus berupa bilangan bulat' })
   @Min(0, { message: 'Stok minimal 0' })
   stok: number;
+
+  @IsOptional()
+  foto?: any;
 }
