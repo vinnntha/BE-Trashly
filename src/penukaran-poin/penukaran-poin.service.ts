@@ -7,6 +7,7 @@ import {
 import { Role, StatusPenukaran } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateStatusPenukaranDto } from './dto/update-status-penukaran.dto';
+import { CreatePenukaranPoinDto } from './dto/create-penukaran-poin.dto';
 import { parseMonthRange } from '../common/utils/date.util';
 
 @Injectable()
@@ -146,4 +147,146 @@ export class PenukaranPoinService {
       },
     };
   }
+
+  async tukar(dto: CreatePenukaranPoinDto, nasabahId: string) {
+    if (!nasabahId) {
+      throw new BadRequestException('Profil nasabah tidak ditemukan untuk user ini.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const hadiah = await tx.hadiah.findUnique({
+        where: { id: dto.hadiahId },
+      });
+
+      if (!hadiah) {
+        throw new NotFoundException('Hadiah tidak ditemukan.');
+      }
+
+      if (hadiah.stok <= 0) {
+        throw new BadRequestException('Stok hadiah ini sudah habis.');
+      }
+
+      const nasabah = await tx.nasabah.findUnique({
+        where: { id: nasabahId },
+      });
+
+      if (!nasabah) {
+        throw new NotFoundException('Data nasabah tidak ditemukan.');
+      }
+
+      if (nasabah.saldoPoin < hadiah.poinDibutuhkan) {
+        throw new BadRequestException(
+          `Saldo poin Anda (${nasabah.saldoPoin} poin) tidak mencukupi untuk menukar hadiah ini (${hadiah.poinDibutuhkan} poin).`,
+        );
+      }
+
+      const now = new Date();
+      const year = now.getUTCFullYear();
+      const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+      const yearMonth = `${year}${month}`;
+
+      const startDate = new Date(Date.UTC(year, now.getUTCMonth(), 1, 0, 0, 0));
+      const endDate = new Date(Date.UTC(year, now.getUTCMonth() + 1, 1, 0, 0, 0));
+
+      const count = await tx.penukaranPoin.count({
+        where: {
+          tanggal: { gte: startDate, lt: endDate },
+        },
+      });
+
+      let nextNumber = count + 1;
+      let kodePenukaran = `TKR-${yearMonth}-${String(nextNumber).padStart(4, '0')}`;
+
+      let existingCode = await tx.penukaranPoin.findUnique({
+        where: { kodePenukaran },
+      });
+      while (existingCode) {
+        nextNumber++;
+        kodePenukaran = `TKR-${yearMonth}-${String(nextNumber).padStart(4, '0')}`;
+        existingCode = await tx.penukaranPoin.findUnique({
+          where: { kodePenukaran },
+        });
+      }
+
+      const updatedNasabah = await tx.nasabah.update({
+        where: { id: nasabahId },
+        data: {
+          saldoPoin: {
+            decrement: hadiah.poinDibutuhkan,
+          },
+        },
+      });
+
+      await tx.hadiah.update({
+        where: { id: hadiah.id },
+        data: {
+          stok: {
+            decrement: 1,
+          },
+        },
+      });
+
+      const penukaran = await tx.penukaranPoin.create({
+        data: {
+          kodePenukaran,
+          tanggal: now,
+          nasabahId,
+          hadiahId: hadiah.id,
+          poinTerpakai: hadiah.poinDibutuhkan,
+          status: StatusPenukaran.DIPROSES,
+        },
+        include: {
+          hadiah: {
+            select: {
+              namaHadiah: true,
+            },
+          },
+        },
+      });
+
+      return {
+        id: penukaran.id,
+        kodePenukaran: penukaran.kodePenukaran,
+        tanggal: penukaran.tanggal,
+        hadiahId: penukaran.hadiahId,
+        poinTerpakai: penukaran.poinTerpakai,
+        sisaSaldoPoin: updatedNasabah.saldoPoin,
+        status: penukaran.status.toLowerCase(),
+        hadiah: {
+          namaHadiah: penukaran.hadiah.namaHadiah,
+        },
+      };
+    });
+  }
+
+  async findMyPenukaran(nasabahId: string) {
+    if (!nasabahId) {
+      throw new BadRequestException('Profil nasabah tidak ditemukan untuk user ini.');
+    }
+
+    const list = await this.prisma.penukaranPoin.findMany({
+      where: { nasabahId },
+      orderBy: { tanggal: 'desc' },
+      include: {
+        hadiah: {
+          select: {
+            id: true,
+            namaHadiah: true,
+            poinDibutuhkan: true,
+            foto: true,
+          },
+        },
+      },
+    });
+
+    return list.map((item) => ({
+      id: item.id,
+      kodePenukaran: item.kodePenukaran,
+      tanggal: item.tanggal,
+      poinTerpakai: item.poinTerpakai,
+      status: item.status.toLowerCase(),
+      hadiah: item.hadiah,
+    }));
+  }
 }
+
