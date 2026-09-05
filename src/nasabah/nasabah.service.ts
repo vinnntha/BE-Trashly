@@ -91,7 +91,38 @@ export class NasabahService {
     return userWithoutPassword;
   }
 
+  async getProfile(nasabahId: string) {
+    if (!nasabahId) {
+      throw new BadRequestException('Profil nasabah tidak ditemukan untuk akun ini.');
+    }
+
+    const nasabah = await this.prisma.nasabah.findUnique({
+      where: { id: nasabahId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!nasabah) {
+      throw new NotFoundException('Data nasabah tidak ditemukan.');
+    }
+
+    return nasabah;
+  }
+
   async update(id: string, dto: UpdateNasabahDto, file?: Express.Multer.File) {
+    if (!id) {
+      throw new BadRequestException('ID Nasabah tidak valid atau belum terdaftar.');
+    }
+
     const existing = await this.prisma.nasabah.findUnique({
       where: { id },
     });
