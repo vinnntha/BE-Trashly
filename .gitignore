@@ -64,9 +64,11 @@ prompt.md
 authpromt.md
 promtadmin.md
 transaktion.md
+nasabahpromt.md
 
 
 .env.example
 *postman_collection.json
+postmancollection.json
 
 *tsbuildinfo
