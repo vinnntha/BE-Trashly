@@ -91,7 +91,10 @@ export class PenukaranPoinService {
     };
   }
 
-  async findNota(id: string, user: { id: string; role: Role }) {
+  async findNota(
+    id: string,
+    user: { id: string; role: Role; nasabahId?: string | null },
+  ) {
     const penukaran = await this.prisma.penukaranPoin.findUnique({
       where: { id },
       include: {
@@ -121,9 +124,9 @@ export class PenukaranPoinService {
       );
     }
 
-    if (user.role === Role.NASABAH && penukaran.nasabah.userId !== user.id) {
+    if (user.role === 'NASABAH' && penukaran.nasabahId !== user.nasabahId) {
       throw new ForbiddenException(
-        'Anda tidak memiliki akses untuk melihat nota penukaran poin ini.',
+        'Anda tidak memiliki akses ke transaksi ini.',
       );
     }
 

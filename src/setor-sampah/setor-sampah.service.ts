@@ -171,7 +171,10 @@ export class SetorSampahService {
     });
   }
 
-  async findOne(id: string, user: { id: string; role: Role }) {
+  async findOne(
+    id: string,
+    user: { id: string; role: Role; nasabahId?: string | null },
+  ) {
     const setor = await this.prisma.setorSampah.findUnique({
       where: { id },
       include: {
@@ -214,9 +217,9 @@ export class SetorSampahService {
       );
     }
 
-    if (user.role === Role.NASABAH && setor.nasabah.userId !== user.id) {
+    if (user.role === 'NASABAH' && setor.nasabahId !== user.nasabahId) {
       throw new ForbiddenException(
-        'Anda tidak memiliki akses untuk melihat struk setoran ini.',
+        'Anda tidak memiliki akses ke transaksi ini.',
       );
     }
 

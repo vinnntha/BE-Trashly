@@ -12,12 +12,12 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('rekapitulasi')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
 export class RekapitulasiController {
   constructor(private readonly rekapitulasiService: RekapitulasiService) {}
 
   @Get('bulanan')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   async getRekapitulasiBulanan(@Query('bulan') bulan?: string) {
     const data = await this.rekapitulasiService.getRekapitulasiBulanan(bulan);

@@ -18,12 +18,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { adminUploadOptions } from '../common/multer/multer.config';
 
 @Controller('admin')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Put('profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('foto', adminUploadOptions))
   async updateProfile(

@@ -12,11 +12,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('dashboard')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   async getStats() {
@@ -28,6 +28,7 @@ export class DashboardController {
   }
 
   @Get('summary')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('NASABAH')
   @HttpCode(HttpStatus.OK)
   async getSummary(@Req() req: any) {
