@@ -37,3 +37,4 @@ export const createUploadOptions = (folder: string) => ({
 export const nasabahUploadOptions = createUploadOptions('nasabah');
 export const kategoriUploadOptions = createUploadOptions('kategori');
 export const hadiahUploadOptions = createUploadOptions('hadiah');
+export const adminUploadOptions = createUploadOptions('admin');
