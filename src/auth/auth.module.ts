@@ -16,7 +16,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'trashly_jwt_secret_key_2026',
       signOptions: {
-        expiresIn: (process.env.JWT_EXPIRES_IN as any) || '1d',
+        expiresIn: (process.env.JWT_EXPIRES_IN as any) || '1h',
       },
     }),
   ],
