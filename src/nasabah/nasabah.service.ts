@@ -6,12 +6,16 @@ import {
 import { Role, StatusPenukaran, StatusSetor } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 import { CreateNasabahDto } from './dto/create-nasabah.dto';
 import { UpdateNasabahDto } from './dto/update-nasabah.dto';
 
 @Injectable()
 export class NasabahService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async findAll() {
     return this.prisma.nasabah.findMany({
@@ -63,7 +67,9 @@ export class NasabahService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const photoPath = file ? `/uploads/nasabah/${file.filename}` : null;
+    const photoPath = file
+      ? await this.cloudinaryService.uploadImage(file, 'nasabah')
+      : null;
 
     const user = await this.prisma.$transaction(async (tx) => {
       return tx.user.create({
@@ -133,7 +139,13 @@ export class NasabahService {
 
     const namaNasabah = dto.namaNasabah ?? dto.namaLengkap;
     const telp = dto.telp ?? dto.noTelepon;
-    const photoPath = file ? `/uploads/nasabah/${file.filename}` : undefined;
+    let photoPath: string | undefined = undefined;
+    if (file) {
+      photoPath = await this.cloudinaryService.uploadImage(file, 'nasabah');
+      if (existing.foto) {
+        await this.cloudinaryService.deleteImage(existing.foto);
+      }
+    }
 
     return this.prisma.nasabah.update({
       where: { id },

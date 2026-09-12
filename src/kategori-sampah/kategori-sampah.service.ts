@@ -4,12 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 import { CreateKategoriSampahDto } from './dto/create-kategori-sampah.dto';
 import { UpdateKategoriSampahDto } from './dto/update-kategori-sampah.dto';
 
 @Injectable()
 export class KategoriSampahService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async findAll() {
     return this.prisma.kategoriSampah.findMany({
@@ -32,7 +36,9 @@ export class KategoriSampahService {
   }
 
   async create(dto: CreateKategoriSampahDto, file?: Express.Multer.File) {
-    const photoPath = file ? `/uploads/kategori/${file.filename}` : null;
+    const photoPath = file
+      ? await this.cloudinaryService.uploadImage(file, 'kategori')
+      : null;
 
     return this.prisma.kategoriSampah.create({
       data: {
@@ -60,7 +66,13 @@ export class KategoriSampahService {
       );
     }
 
-    const photoPath = file ? `/uploads/kategori/${file.filename}` : undefined;
+    let photoPath: string | undefined = undefined;
+    if (file) {
+      photoPath = await this.cloudinaryService.uploadImage(file, 'kategori');
+      if (existing.foto) {
+        await this.cloudinaryService.deleteImage(existing.foto);
+      }
+    }
 
     return this.prisma.kategoriSampah.update({
       where: { id },

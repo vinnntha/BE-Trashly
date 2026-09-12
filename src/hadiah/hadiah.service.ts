@@ -5,12 +5,16 @@ import {
 } from '@nestjs/common';
 import { StatusPenukaran } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CloudinaryService } from '../common/cloudinary/cloudinary.service';
 import { CreateHadiahDto } from './dto/create-hadiah.dto';
 import { UpdateHadiahDto } from './dto/update-hadiah.dto';
 
 @Injectable()
 export class HadiahService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async findAll() {
     return this.prisma.hadiah.findMany({
@@ -31,7 +35,9 @@ export class HadiahService {
   }
 
   async create(dto: CreateHadiahDto, file?: Express.Multer.File) {
-    const photoPath = file ? `/uploads/hadiah/${file.filename}` : null;
+    const photoPath = file
+      ? await this.cloudinaryService.uploadImage(file, 'hadiah')
+      : null;
 
     return this.prisma.hadiah.create({
       data: {
@@ -52,7 +58,13 @@ export class HadiahService {
       throw new NotFoundException(`Hadiah dengan ID '${id}' tidak ditemukan.`);
     }
 
-    const photoPath = file ? `/uploads/hadiah/${file.filename}` : undefined;
+    let photoPath: string | undefined = undefined;
+    if (file) {
+      photoPath = await this.cloudinaryService.uploadImage(file, 'hadiah');
+      if (existing.foto) {
+        await this.cloudinaryService.deleteImage(existing.foto);
+      }
+    }
 
     return this.prisma.hadiah.update({
       where: { id },
