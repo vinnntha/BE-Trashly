@@ -15,6 +15,16 @@ import { Roles } from '../auth/decorators/roles.decorator';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
+  @Get('public-stats')
+  @HttpCode(HttpStatus.OK)
+  async getPublicStats() {
+    const data = await this.dashboardService.getStats();
+    return {
+      message: 'Statistik publik Trashly berhasil diambil.',
+      data,
+    };
+  }
+
   @Get('stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
