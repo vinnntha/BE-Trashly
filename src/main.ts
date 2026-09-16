@@ -35,11 +35,6 @@ async function bootstrap() {
   // Global Response Interceptor
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  // Serve static uploaded files
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
-  });
-
   // Railway akan otomatis mengisi process.env.PORT, default ke 3000 jika lokal
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
