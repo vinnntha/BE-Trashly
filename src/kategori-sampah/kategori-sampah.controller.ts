@@ -26,7 +26,6 @@ export class KategoriSampahController {
   constructor(private readonly kategoriSampahService: KategoriSampahService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async findAll() {
     const data = await this.kategoriSampahService.findAll();
