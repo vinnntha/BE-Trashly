@@ -40,8 +40,9 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  const port = process.env.PORT ?? 3000;
-  await app.listen(port);
-  console.log(`🚀 Trashly Backend API is running on: http://localhost:${port}/api/v1`);
+  // Railway akan otomatis mengisi process.env.PORT, default ke 3000 jika lokal
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Trashly Backend API is running on port ${port}`);
 }
 bootstrap();

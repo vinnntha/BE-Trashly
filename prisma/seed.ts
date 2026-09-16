@@ -126,7 +126,7 @@ async function main() {
 
   const katKaca = await prisma.kategoriSampah.create({
     data: {
-      namaKategori: 'Kaca Botol Kerapu',
+      namaKategori: 'Kaca Botol',
       hargaPerKg: 1500,
       poinPerKg: 15,
       jenis: JenisKategori.KACA,
